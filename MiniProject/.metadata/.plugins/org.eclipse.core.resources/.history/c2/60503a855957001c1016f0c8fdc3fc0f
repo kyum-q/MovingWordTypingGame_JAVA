@@ -1,0 +1,38 @@
+import java.awt.*;
+import javax.swing.*;
+import org.w3c.dom.Text;
+
+class GameGroundPanel extends JPanel {
+		private TextSource textSource = null;
+		private Thread textTh [] = null;
+		private Thread diamondTh = null;
+		private ScorePanel scorePanel = null;
+
+		private ImageIcon icon = new ImageIcon("game.png");
+		private Image img = icon.getImage();
+		
+		public GameGroundPanel(ScorePanel scorePanel, Thread[] textTh,TextSource textSource) {
+			this.scorePanel = scorePanel;
+			this.textTh = textTh;
+			this.textSource = textSource;
+			setLayout(null);
+		}
+		public void textAdd(JLabel text) {
+			addNewWord(text); // 단어 불러오기
+			text.setSize(150,30);
+			int x = (int)(Math.random()*300); 
+			int y = 10; // x는 랜덤한 위치에서 y는 시간에 따라 내려와야하므로 10에서부터 등장
+			text.setForeground(Color.WHITE);
+			text.setLocation(x,y);
+			add(text);
+		}
+		public void addNewWord(JLabel text) {
+			// 단어 한 개 선택
+			String newWord = textSource.get(); // 단어 하나 가져오기
+			text.setText(newWord); // text 가져온 단어로 변경	
+		}
+		public void paintComponent(Graphics g) { //call back 함수
+			super.paintComponent(g); // 중요 - 패널을 모두 지운다 -> 배경색을 칠한다
+			g.drawImage(img, 0,0, this.getWidth(), this.getHeight(), null);
+		}
+	}

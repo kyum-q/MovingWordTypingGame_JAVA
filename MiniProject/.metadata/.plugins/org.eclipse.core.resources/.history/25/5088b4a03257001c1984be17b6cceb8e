@@ -1,0 +1,149 @@
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Font;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+public class ScorePanel extends JPanel {
+	private Thread gameTh = null;
+	private Font font = new Font("타이포_쌍문동 B", Font.BOLD, 15);
+	private int score = 0;
+	private JLabel textLabel = new JLabel("점수");
+	private JLabel scoreLabel = new JLabel(Integer.toString(score));
+	
+	private int lifeCount = 3;
+	private int MaxLife = 5;
+	private JLabel life [] = new JLabel[MaxLife];
+	private int lifeX = 10, lifeY = 40;
+	
+	private JLabel bombText = new JLabel("소지 폭탄 : ");
+	private JLabel bomb [] = new JLabel[5];
+	private int bombCount = 0;
+	private int bombX = 10, bombY = 100;
+	
+	private JLabel speedText = new JLabel("speed  : ");
+	
+	
+	public ScorePanel() {
+		setBackground(Color.LIGHT_GRAY);
+		setLayout(null);
+		
+		textLabel.setSize(50,20);
+		textLabel.setLocation(10,10);
+		textLabel.setFont(font);
+		add(textLabel);
+		
+		scoreLabel.setSize(100,20);
+		scoreLabel.setLocation(70,10);
+		scoreLabel.setFont(font);
+		add(scoreLabel);
+		
+		bombText.setSize(100,15);
+		bombText.setLocation(10,70);
+		bombText.setFont(font);
+		add(bombText);
+		
+		speedText.setSize(300,50);
+		speedText.setFont(font);
+		speedText.setLocation(10,130);
+		add(speedText);
+		
+		lifeInit();
+		bombInit();
+	}
+	public void scoreInit() {
+		lifeCount = 3;
+		bombCount = 0;
+		score = 0;
+		scoreLabel.setText(Integer.toString(score));
+		
+		lifePrint();
+		bombPrint();
+	}
+	public void setGameThread(GameThread gameTh) {
+		this.gameTh = gameTh;
+	}
+	public void lifeInit() {
+		int x = this.lifeX;
+		for(int i=0; i<MaxLife; i++) {
+			life[i] = new JLabel("♥");
+			life[i].setSize(10,10);
+			life[i].setLocation(x,lifeY);
+			life[i].setForeground(Color.GRAY);
+			this.add(life[i]);
+			x += 20;
+		}
+		for(int i=0; i<lifeCount; i++) 
+			life[i].setForeground(Color.RED);
+	}
+	public void lifePrint() {
+		for(int i=0; i<MaxLife; i++) 
+			life[i].setForeground(Color.GRAY);
+		
+		for(int i=0; i<lifeCount; i++) 
+			life[i].setForeground(Color.RED);
+	}
+	public boolean checkLifeCount() { 
+		if(lifeCount>=MaxLife)
+			return true;
+		else
+			return false;
+		}
+	public void lifeiIncrease() {// life 증가
+		life[lifeCount].setForeground(Color.RED);
+		lifeCount++;
+	}
+	public void lifeDecrease() { // life 감소
+		lifeCount--;
+		life[lifeCount].setForeground(Color.GRAY);
+		if(lifeCount == 0) {
+			gameTh.interrupt();
+		}	
+	}
+	public void bombInit() {
+		int x = this.bombX;
+		for(int i=0; i<5; i++) {
+			bomb[i] = new JLabel(" ");
+			bomb[i].setSize(20,20);
+			bomb[i].setLocation(x,bombY);
+			add(bomb[i]);
+			x += 20;
+		}
+	}
+	public void bombPrint() {
+		for(int i=0; i<5; i++) 
+			bomb[bombCount].setText("");
+		
+		for(int i=0; i<bombCount; i++) 
+			bomb[bombCount].setText("💣");
+	}
+	public void bombIncrease() {
+		if(bombCount >= 5)
+			return;
+		bomb[bombCount].setText("💣");
+		bombCount++;
+	}
+	public void bombDecrease() {
+		if(bombCount <= 0)
+			return;
+		bombCount--;
+		bomb[bombCount].setText("");
+	}
+	public int getBombCount() { return bombCount; }
+	
+	public int getScore() {
+		return score;
+	}
+	public void increase(int i) {
+		score += i;
+		scoreLabel.setText(Integer.toString(score));
+		if(score >= 100) {
+			((GameThread) gameTh).setEnd(1);
+			gameTh.interrupt();
+		}
+	}
+	public void changeSpeed(String speed) {
+		speedText.setText(speed);
+	}
+}

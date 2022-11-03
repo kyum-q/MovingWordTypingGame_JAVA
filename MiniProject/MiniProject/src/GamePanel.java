@@ -1,0 +1,258 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+public class GamePanel extends JPanel{ 
+	private GameThread gameTh = null; // 랜덤한 시간이 지나면 보석을 나타나게하는 thread
+	private Thread textTh [] = null; // 일반 보석을 움직이기 위해 만든 thread
+	private Thread diamondTh = null; // diamond을 움직이기 위해 만든 thread
+	private Thread itemTh [] = new ItemThread[3]; // item을 움직이기 위해 만든 thread
+	
+	private JTextField input = new JTextField(40);
+	private JLabel text [] = new JLabel[10]; // 일반 보석 label
+	private JLabel diamond = null;  // 다이아몬드 label
+	private JLabel item[] = new JLabel [3]; // item
+	
+	private int textChange[] = new int [10]; // text 맞히는 횟수(text 변화 횟수)
+	private int textCount = 0; // 화면에 나타난 일반 보석 수
+	private int maxTextCount = 4; // 화면에 표시할 수 있는 최대 수
+	private int diamondCount = 0; // 화면에 나타난 다이아몬드 수
+	private int itemCount[] = new int [3]; // 화면에 나타난 아이템 수
+	
+	private int delay = 600; // 보석이 떨어지는 속도
+	private int gameStart = 0; // game이 진행되는지 알기 위해 사용 (0:진행 X || 1:진행 O)
+	
+	ImageIcon level1Icon = new ImageIcon("level1-1.png");
+	ImageIcon diamondIcon = new ImageIcon("diamond.png");
+	ImageIcon [] level2Icon = {
+			new ImageIcon("level2-1.png"), 
+			new ImageIcon("level2-2.png"),
+	};
+	ImageIcon [] itemIcon = {
+			new ImageIcon("bread.png"), 
+			new ImageIcon("bomb.png"), 
+			new ImageIcon("pickax.png")
+	};
+	
+	private ScorePanel scorePanel = null;
+	private EditPanel editPanel = null;
+	private GameGroundPanel groundPanel = null;
+	private GameInitPanel startPanel = null;
+	private GameFrame gameFrame = null;
+	
+	public GamePanel(ScorePanel scorePanel, EditPanel editPanel, GameGroundPanel groundPanel,Thread[] textTh, GameFrame gameFrame) {
+		this.scorePanel = scorePanel;
+		this.editPanel = editPanel;
+		this.groundPanel = groundPanel;
+		this.textTh = textTh;
+		this.gameFrame = gameFrame;
+		
+		startPanel = new GameInitPanel(0,"보석을 찾아 부자가 될거야!"); // 초기화면
+		
+		gameStart = 0; //  0 : 게임 초기화 (시작 전 단계) -> 1 : 게임 시작 (게임 중복 시작 방지)
+		
+		// imgSizeSet(img) = img 사이즈 조정
+		level1Icon = imgSizeSet(level1Icon); 
+		diamondIcon = imgSizeSet(diamondIcon);
+		for(int i=0;i<2;i++)
+			level2Icon[i] = imgSizeSet(level2Icon[i]);
+		for(int i=0;i<3;i++)
+			itemIcon[i] = imgSizeSet(itemIcon[i]);
+		
+		setLayout(new BorderLayout());
+		add(startPanel,BorderLayout.CENTER); 
+		add(new InputPanel(),BorderLayout.SOUTH);
+		input.addActionListener(new ActionListener() { // input 창에 단어를 입력하고 엔터를 누를 시
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JTextField t = (JTextField)e.getSource(); // e를 실행한 객체 알아내기
+				String inWord = t.getText(); // t에 있는 text 알아내기
+				if(inWord.equals("play") && gameStart == 0) { // 게임 시작 전에 play라고 입력시 게임 시작
+					gameFrame.startGameTh();
+				}
+				
+				if(inWord.equals("!") && scorePanel.getBombCount()>0) { // 폭탄 item을 가지고 있을 때 '!'을 입력했을 시
+					scorePanel.bombDecrease(); // 폭탄 갯수 줄이기
+					((GameThread) gameTh).allEnd(); // 실행중인 Thread 모두 제거			
+				}
+				
+				if(diamondCount != 0) // diamond가 화면에 존재 할 시
+					if(diamond.getText().equals(inWord)) { // diamond를 맞췄을 경우
+						diamondCount--; // 다이아몬드 갯수 줄이기
+						textMoveThreadEnd(); // 실행중인 textMoveThread 모두 제거
+						itemThreadEnd(); // 실행중인 item 모두 제거
+						((DiamondThread) diamondTh).getTedScore(); // 키보드 입력으로 점수 획득 창 만들기
+					}
+				
+				for(int i=0;i<3;i++) {
+					if(itemCount[i]!=0) { // 현재 아이템이 화면에 있을 경우
+						if(item[i].getText().equals(inWord)) { // 맞추기 성공(정답)
+							switch(i) {
+							// 0 = 빵item(생명++) | 1 = 폭탄 item(보석 모두 삭제) | 2 = 곡괭이item(속도 낮추기)
+							case 0: scorePanel.lifeiIncrease(); break;
+							case 1: scorePanel.bombIncrease(); break;
+							case 2: ((GameThread) gameTh).setTextSpeed(2); break;
+							}
+							itemCount[i]--; // 해당 item 갯수 줄이기
+							itemTh[i].interrupt(); // 해당 item Thread 종료
+						}
+					}
+				}
+				
+				for(int i=0;i<maxTextCount;i++) { // 화면에 있는 text를 모두 검사하기 위해 0~textCount-1까지 모두 비교
+					if(textChange[i] != 0) { // 현재 화면에 존재할 경우
+						if(text[i].getText().equals(inWord)) { // 맞추기 성공(정답)
+							textChange[i]--; // 맞췄으니 1 감소
+							if(textChange[i]==0) { // 입력해야하는 단어 수를 모두 입력했을 시(level1:1번 level2:2번)
+								Icon icon = text[i].getIcon(); // text의  icon 알아내기
+								if(icon.equals(level2Icon[0]) || icon.equals(level2Icon[1])) // level 2일경우 true
+									scorePanel.increase(20); // 점수 올리기 (20점)
+								else
+									scorePanel.increase(10); // 점수 올리기 (10점)
+								textTh[i].interrupt(); // textTh[i]스레드에게 InterruptedException을 보내는 함수. 중단 시키고 싶어
+							}
+							else
+								groundPanel.addNewWord(text[i]); // 새로운 단어 출력
+						}
+					}
+				}
+				t.setText(""); // input 창 지우기
+			}
+		});
+	}
+	public void setGameThread(GameThread gameTh) { this.gameTh = gameTh; }  // gameThread 설정
+	public void decreaseDiamond() { diamondCount--; } // diamond 수 하나 줄이기
+	public int getTextChange(int i) { return textChange[i]; } // 입력해야하는 단어 수 알아내기
+	public void setTextChange(int i, int n) { this.textChange[i] = n; } // textChange 변경
+	public void textCountDecrease() { this.textCount--; } // textCount 감소
+	public JTextField getInput() { return input; }	// input 리턴 (input에 focus를 맞추기 위해 존재)
+	public int getGameStart() { return gameStart; } // 현재 게임이 실행중인지 알아내기
+	public void setGame(int delay, int maxTextCount) { // 게임 설정
+		this.delay = delay; // 속도 설정
+		this.maxTextCount = maxTextCount; // 화면에 나타날 수 있는 최대 갯수 설정
+	}
+	public void startGamePanel(){ 
+		add(groundPanel,BorderLayout.CENTER);
+		startPanel.setVisible(false); // 게임 초기화면 숨기기
+		groundPanel.setVisible(true); // 게임화면 나타내기
+		gameStart = 1; // 게임 시작했으므로 1로 변경
+	}
+	public void gameEndPanel(int i) { // 게임 종료
+		String s = (i==1)?"GAME CLEAR":"GAME OVER";
+		// i가 1이면 game 성공 | 1이 아니면 game 실패
+		startPanel = new GameInitPanel(i,s); // 게임 화면 변경
+		add(startPanel,BorderLayout.CENTER);
+		groundPanel.setVisible(false); // 게임화면 숨기기
+		gameStart = 0; // 게임 종료했으므로 0으로 변경
+	}
+	public ImageIcon imgSizeSet(ImageIcon icon) {
+		Image img = icon.getImage();
+		Image changeImg = img.getScaledInstance(20,20,Image.SCALE_SMOOTH);
+		ImageIcon changeIcon = new ImageIcon(changeImg);
+		return changeIcon;
+	}
+	public void delaySet(double n,String s) { // 속도 변화 
+		delay = (int)(delay*n);	// delay n배
+		scorePanel.changeSpeed(s); 
+		}
+	public void textMake(int i) {
+		int randomFrequency = (int)(Math.random()*99)+1; // 보석이 출현하는 빈도수 결정
+		
+		if(randomFrequency >= 90 && diamondCount==0) { // 10%는 다이아몬드 출현 && diamond는 한번에 하나만 출현 가능
+			diamondCount++; 
+			diamond = new JLabel("",diamondIcon,JLabel.CENTER);
+			groundPanel.textAdd(diamond); // diamond 단어 추가
+			
+			diamondTh = new DiamondThread(diamond, scorePanel, this, (int)(delay/2));
+			diamondTh.start(); // 스레드 시작
+		}
+		else if(randomFrequency >= 75) { // 15%는 아이템 출현
+			// 0 = 빵item(생명++) | 1 = 폭탄 item(보석 모두 삭제) | 2 = 곡괭이item(속도 낮추기)
+			int randomitem = (int)(Math.random()*3); // item 선정(어떤 아이템인가)
+			if(scorePanel.checkLifeCount() && randomitem == 0) // 빵 아이템은 목숨이 최대일때 안나오게 만듦
+				randomitem =(int)(Math.random()*2)+1; // 빵이 아니니 다른 거 선택
+			if(itemCount[randomitem] == 0) { // 한 item은 화면에 하나만 나올 수 있음(화면에 item이 존재하는지 확인)
+				item[randomitem] = new JLabel("",itemIcon[randomitem], JLabel.CENTER);
+				groundPanel.textAdd(item[randomitem]); // item 단어 추가
+				itemCount[randomitem]++;
+				
+				itemTh[randomitem] = new ItemThread(item[randomitem], delay);
+				itemTh[randomitem].start(); // 스레드 시작
+			}
+		}
+		else {
+			if(randomFrequency >= 20) {  // 55%는 1번 입력하면 획득할 수 있는 보석
+				textChange[i] = 1; // 단어 입력 수 1개
+				text[i] = new JLabel("",level1Icon,JLabel.CENTER);
+			}
+			else  { // 20%는 2번 입력하면 획득할 수 있는 보석
+				textChange[i] = 2; // 단어 입력 수 2개
+				text[i] = new JLabel("",level2Icon[(int)(Math.random()*2)],JLabel.CENTER);
+			}
+			groundPanel.textAdd(text[i]); // 보석 단어 추가
+			textCount++; // text가 생성되었으므로 count증가
+		
+			textTh[i] = new TextMoveThread(text[i], scorePanel, this, i, delay); // 스레드 생성
+			textTh[i].start(); // 스레드 시작(JVM에게 스케줄링해도 됩니다)
+		}
+	}
+	public void textMoveThreadEnd () {
+		for(int i=0;i<maxTextCount;i++) { // 현재 실행 중인 textTh 중지
+			if(getTextChange(i) != 0) { 
+				textChange[i] = 0; 
+				textTh[i].interrupt(); // 현재 존재하는 text 스레드 중지
+			}
+		}
+	}
+	public void itemThreadEnd() {
+		for(int i=0;i<3;i++) { // 현재 실행 중인 textTh 중지
+			if(itemCount[i] != 0) { 
+				itemCount[i] = 0; 
+				itemTh[i].interrupt(); // 현재 존재하는 item 스레드 중지
+			}
+		}
+	}
+	public void diamondThreadEnd() {
+		if(diamondCount != 0) {
+			diamondCount = 0;
+			diamondTh.interrupt(); // 현재 존재하는 diamond 스레드 중지
+		}
+	}
+	
+	class InputPanel extends JPanel { // 단어 입력 창
+		public InputPanel() {
+			setLayout(new FlowLayout());
+			setBackground(Color.lightGray);
+			add(input);
+		}
+	}
+	class GameInitPanel extends JPanel {
+		private ImageIcon [] icon = {
+				new ImageIcon("game.png"),
+				new ImageIcon("success.png"),
+				new ImageIcon("fail.png"),
+		};
+		private Image img = null;
+		private Font font = new Font("타이포_쌍문동 B", Font.BOLD, 30);
+		
+		private JLabel initText = new JLabel("");
+		
+		public GameInitPanel(int select, String s) {
+			img = icon[select].getImage();
+			initText.setText(s);
+			setLayout(new BorderLayout());
+			initGame(); // 초기 화면 설정
+		}
+		public void initGame() { // 초기화면
+			initText.setHorizontalAlignment(JLabel.CENTER);
+			initText.setFont(font); // font 설정
+			initText.setForeground(Color.WHITE);
+			add(initText);
+		}
+		@Override
+		public void paintComponent(Graphics g) { //call back 함수
+			super.paintComponent(g); // 패널을 모두 지운다 -> 배경색을 칠한다
+			g.drawImage(img, 0,0, this.getWidth(), this.getHeight(), null);
+		}
+	}
+}

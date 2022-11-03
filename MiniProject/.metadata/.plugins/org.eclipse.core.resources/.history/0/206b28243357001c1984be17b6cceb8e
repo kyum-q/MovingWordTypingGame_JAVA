@@ -1,0 +1,51 @@
+import java.awt.Container;
+import java.time.Clock;
+
+import javax.swing.JLabel;
+
+class TextMoveThread extends Thread {
+	private ScorePanel scorePanel = null;
+	private GamePanel gamePanel = null;
+	private int delay = 600;
+	private int increase = 10;
+	private int i = 0; // text[i]의 i
+	private JLabel label = null;
+	
+	public TextMoveThread (JLabel label, ScorePanel scorePanel,GamePanel gamePanel, int i, int delay) {
+		String name  = "text[" + i + "]";
+		this.setName(name);
+		this.i = i;
+		this.delay = delay;
+		this.label = label;
+		this.scorePanel = scorePanel;
+		this.gamePanel = gamePanel;
+	}
+	@Override
+	public void run() { // 스레드 코드. 이주소에서 실행을 시작하도록  TCB에 기록된다.
+		while(true) {
+			Container c = label.getParent(); // label이 붙어 있는 컨테이너
+			int x = label.getX();
+			int y = label.getY();
+			label.setLocation(x,y+increase);
+				
+			if(y >= c.getHeight()) {
+				scorePanel.lifeDecrease();  
+				interrupt(); //InterruptedException을 보내는 함수. 중단 시키고 싶어
+			}
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {
+				gamePanel.textCountDecrease();
+				gamePanel.setTextChange(i,0);
+				c.remove(label); //컨테이너에서 label 컴포넌트 떼어내기
+				c.repaint(); //컨테이너에게 다시 그릴 것을 지시
+				
+				return; //run()의 리턴은 스레드 종료
+			}
+		}
+	}
+	public void textSpped(double n, String s) {
+		delay = (int)(delay*n);	
+		scorePanel.changeSpeed(s);
+	}
+}

@@ -1,0 +1,146 @@
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+public class GamePanel extends JPanel{ 
+	private Thread gameTh = null;
+	private Thread textTh [] = null; // text 움직이기 위해 만든 thread
+	private Thread diamondTh = null;
+	private Thread iteamTh = null;
+	
+	private JTextField input = new JTextField(40);
+	private JLabel text [] = new JLabel[10];
+	private int textChange[] = new int [10]; // text 맞히는 횟수(text 변화 횟수)
+	private JLabel diamond = null;  // 다이아몬드
+	private int diamondCount = 0;
+	private JLabel iteam[] = new JLabel [3]; // iteam
+	private int iteamCount[] = new int [3];
+	
+	private int textCount = 0;
+	private int maxTextCount = 4; // 화면에 표시할 수 있는 최대 카운트
+	
+	private ScorePanel scorePanel = null;
+	private EditPanel editPanel = null;
+	private GameGroundPanel groundPanel = null;
+	
+	public GamePanel(ScorePanel scorePanel, EditPanel editPanel, GameGroundPanel groundPanel,Thread[] textTh) {
+		this.scorePanel = scorePanel;
+		this.editPanel = editPanel;
+		this.groundPanel = groundPanel;
+		this.textTh = textTh;
+		
+		setLayout(new BorderLayout());
+		add(groundPanel,BorderLayout.CENTER);
+		add(new InputPanel(),BorderLayout.SOUTH);
+		input.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JTextField t = (JTextField)e.getSource(); // e를 실행한 객체 알아내기
+				String inWord = t.getText();
+				if(inWord.equals("play")) // play라고 입력시 게임 시작
+					gameTh.start(); // 스레드 시작
+				
+				if(diamondCount != 0)
+					if(diamond.getText().equals(inWord)) { // diamond를 맞췄을 경우
+						diamondCount--;
+						((GameThread) gameTh).textMoveThreadEnd(); // 실행중인 textMoveThread 제거
+						((DiamondThread) diamondTh).getTedScore();
+					}
+				
+				/*for(int i=0;i<3;i++) {
+					if(iteamCount[i]!=0) {
+						if(iteam[i].getText().equals(inWord)) { // 맞추기 성공(정답)
+							
+						}
+					}
+				}*/
+				
+				for(int i=0;i<textCount;i++) { // 화면에 있는 text를 모두 검사하기 위해 0~textCount-1까지 모두 비교
+					if(textChange[i] != 0) {
+						if(text[i].getText().equals(inWord)) { // 맞추기 성공(정답)
+							textChange[i]--; // 맞췄으니 1 감소
+							if(textChange[i]<=0) {
+								Color color = text[i].getBackground();
+								if(color.equals(Color.RED) || color.equals(Color.BLUE)) // level 2일경우 true
+									scorePanel.increase(20); // 점수 올리기 (20점)
+								else
+									scorePanel.increase(10); // 점수 올리기 (10점)
+								
+								textTh[i].interrupt(); // textTh[i]스레드에게 InterruptedException을 보내는 함수. 중단 시키고 싶어
+								textCount--;
+							}
+							else
+								groundPanel.addNewWord(text[i]); // 새로운 단어 출력
+						}
+					}
+				}
+				t.setText(""); // input 창 지우기
+			}
+		});
+	}
+	public void setGameThread(GameThread gameTh) { this.gameTh = gameTh; }  // gameThread 설정
+	public void decreaseDiamond() { diamondCount--; }
+	public int getTextChange(int i) { return textChange[i]; }
+	// textChange 확인	
+	public void setTextChange(int i, int n) { this.textChange[i] = n; }
+	// textChange 설정
+	public void textCountDecrease() { this.textCount--; }
+	// textCount 감소
+	public void startGame() {
+		if(textCount > 0)
+			return;
+		gameTh.run(); // thread 실행
+	}
+	public void textMake(int i) {
+		int randomFrequency = (int)(Math.random()*99)+1; // 보석이 출현하는 빈도수 결정
+		if(randomFrequency >= 95 && diamondCount == 0) { // 5%는 다이아몬드 출현 && diamond는 한번에 하나만 출현 가능
+			diamondCount++;
+			diamond = new JLabel("");
+			groundPanel.textAdd(diamond);
+			
+			diamondTh = new DiamondThread(diamond, scorePanel, this);
+			diamondTh.start(); // 스레드 시작
+			groundPanel.setTextBackGroundColor(3, diamond);
+		}
+		/*else if(randomFrequency >= 85) { // 10%는 아이템 출현
+			int randomIteam = (int)(Math.random()*3); // iteam 선정(어떤 아이템인가)
+			if(iteamCount[randomIteam] == 0) { // 한 iteam은 화면에 하나만 나올 수 있음(화면에 iteam이 존재하는지 확인)
+				iteam[randomIteam] = new JLabel("");
+				groundPanel.textAdd(iteam[randomIteam]);
+				iteamCount[randomIteam]++;
+			}
+			iteamTh = new IteamThread(iteam[randomIteam], randomIteam);
+			iteamTh.start(); // 스레드 시작
+		}*/
+		else {
+			if(randomFrequency >= 20) // 65%는 1번 입력하면 획득할 수 있는 보석
+				textChange[i] = 1; 
+			else // 20%는 2번 입력하면 획득할 수 있는 보석
+				textChange[i] = 2;
+			text[i] = new JLabel("");
+			groundPanel.textAdd(text[i]);
+			textCount++; // text가 생성되었으므로 count증가
+		
+			textTh[i] = new TextMoveThread(text[i], scorePanel, this, 300, i); // 스레드 생성
+			textTh[i].start(); // 스레드 시작(JVM에게 스케줄링해도 됩니다)
+			
+			groundPanel.setTextBackGroundColor(textChange[i],text[i]); // 레벨에 따른 배경색 변화
+		}
+	}
+
+	class InputPanel extends JPanel {
+		public InputPanel() {
+			setLayout(new FlowLayout());
+			setBackground(Color.lightGray);
+			add(input);
+		}
+	}
+}

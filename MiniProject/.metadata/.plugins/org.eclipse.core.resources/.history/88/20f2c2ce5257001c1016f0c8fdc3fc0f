@@ -1,0 +1,58 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner;
+import java.util.Vector;
+
+public class TextSource {
+	private Vector<String> [] v = new Vector[2];
+	//= new Vector<String>(26000);
+	private File [] file = new File[2];
+	private int select = 0; // 언어 선택을 도와주는 변수
+	public TextSource() { // 파일에서 읽기
+		for(int i=0;i<2;i++) 
+			v[i] = new Vector<String>(26000);
+			
+		file[0] = new File("eng.txt");
+		file[1] = new File("kor.txt");
+		readFile();
+	}
+	private void readFile() {
+		try {
+			for(int i=0;i<2;i++) {
+				Scanner fscanner = new Scanner(new FileReader(file[i]));
+				while(fscanner.hasNext()) {  // scanner媛� �떎�쓬 �씫�쓣 寃� �뾾�쓣 �븣源뚯�
+					String word = fscanner.nextLine();
+					v[i].add(word.trim()); // �븵�뮘 怨듬갚 �옒�씪�꽌 v�뿉 異붽�
+				}
+			fscanner.close();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	public void writeFile(String text) {
+		try {
+			FileWriter fw = new FileWriter(file[select], true); // ture濡� �씠�뼱�벐湲� �꽕�젙
+			BufferedWriter writer = new BufferedWriter(fw); 
+			writer.newLine();
+			writer.write(text);
+			writer.flush();
+			writer.close();
+			 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+	public String get() {
+		int index = (int)(Math.random()*v[select].size());
+		// v의 있는 단어 하나를 가져오기 위해 (0~v.size()-1)의 수를 랜덤하게 선택
+		return v[select].get(index);
+		// index의 단어를 리턴
+	}
+	public void setLanguage(int i) { select = i; }
+}
