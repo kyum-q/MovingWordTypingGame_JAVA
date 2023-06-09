@@ -1,40 +1,7 @@
 # 보석을 찾아 부자가 될거야
 화면에 랜덤하게 떨어지는 단어와 똑같이 타이핑을 하여 점수를 얻는 단어 타이핑 게임
 
-## 게임 실행 화면
-
-![Group 4](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/e7dcbcba-fdb5-4869-a8c8-25d2b0debbe7)
-**<p align="center"> [게임 시작 화면] </p>**
-<br>
-![Group 5](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/74213f78-fdd2-4950-b72b-7aedbb5ee8ef)
-**<p align="center"> [곡괭이 아이템 획득 시 화면] &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [폭탄 아이템 획득 시 화면] </p>**
-<br>
-
-![Group 6](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/15130244-4a17-4299-8deb-287670ee56dc)
-**<p align="center"> [빵 아이템 획득 전 화면] &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [빵 아이템 획득 후 화면] </p>**
-> 목숨 증가
-<br>
-
-![Group 7](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/1e5bc9ae-37aa-4a94-b9c2-a06b4b2a6679)
-**<p align="center">[다이아몬드 획득 시 화면]</p>**
-> 3초동안 해당 화면으로 보여짐<br>
-> 키보드를 많이 누를 수록 노란 바가 채워져, 획득한 point 값을 어림짐작할 수 있다.
-<br>
-
-![Group 8](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/60bafb69-e137-483b-9001-687cb91bde5f)
-**<p align="center">[한글로 언어 변경 시 실행 화면]</p>**
-<br>
-
-![Group 3](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/9d885c06-652a-4dc4-be82-4debe11329bf)
-**<p align="center"> [게임 성공 화면] &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [게임 실패 화면] </p>**
-<br>
-
 ## 💍&nbsp; 작품 소개
-<!-- ### 1. 개발 배경
-
-### 2. 개발 목적
-
-### 3. 작품 소개 -->
 
 **운석이 떨어져 아름다운 보석들이 가득한 동굴에 가기로 한 당신, 당신은 그 곳에서 얼마나 아름다운 보석들을 가지고 올 것인가?**<br>
 
@@ -80,9 +47,42 @@
 
 이러한 게임은 위에 튤바에 play버튼을 통해 게임을 시작하거나 아래 JTextDField에 ‘play’를 입력하면 시작된다. 그리고 그 옆에 stop버튼을 통해 게임을 강제로 종료할 수 있다. 마지막으로 그옆에 Set 버튼을 통해 언어변경과 난이도 변경을 할 수 있다.<br><br>
 
+## 게임 실행 화면
+
+![Group 4](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/e7dcbcba-fdb5-4869-a8c8-25d2b0debbe7)
+**<p align="center"> [게임 시작 화면] </p>**
+<br>
+![Group 5](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/74213f78-fdd2-4950-b72b-7aedbb5ee8ef)
+**<p align="center"> [곡괭이 아이템 획득 시 화면] &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [폭탄 아이템 획득 시 화면] </p>**
+<br>
+
+![Group 6](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/15130244-4a17-4299-8deb-287670ee56dc)
+**<p align="center"> [빵 아이템 획득 전 화면] &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [빵 아이템 획득 후 화면] </p>**
+> 목숨 증가
+<br>
+
+![Group 7](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/1e5bc9ae-37aa-4a94-b9c2-a06b4b2a6679)
+**<p align="center">[다이아몬드 획득 시 화면]</p>**
+> 3초동안 해당 화면으로 보여짐<br>
+> 키보드를 많이 누를 수록 노란 바가 채워져, 획득한 point 값을 어림짐작할 수 있다.
+<br>
+
+![Group 1](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/7102a03d-9fec-4295-875d-6332a962657b)
+**<p align="center">[게임 설정 화면]</p>**
+> 튤바에 Set버튼을 누르면 나타나는 게임 설정 창(GameSetFrame)이다.이곳에서 레벨(난이도)과 타이핑 언어를 선택 할 수 있다.
+<br>
+
+![Group 8](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/60bafb69-e137-483b-9001-687cb91bde5f)
+**<p align="center">[한글로 언어 변경 시 실행 화면]</p>**
+<br>
+
+![Group 3](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/9d885c06-652a-4dc4-be82-4debe11329bf)
+**<p align="center"> [게임 성공 화면] &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [게임 실패 화면] </p>**
+<br>
+
 ## 🧩 프로그램 구조
 
-### 1) 게임 메인 화면 창
+### 1) 게임 화면 구성
 
 <img width="1188" alt="image" src="https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/ca8272bd-ac5e-46e8-a1a8-409fc2e96ca1">
 
@@ -98,13 +98,7 @@
 
 <br>
 
-### 2) 게임 설정 창
-
-![Group 1](https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/7102a03d-9fec-4295-875d-6332a962657b)
-
-튤바에 Set버튼을 누르면 나타나는 게임 설정 창(GameSetFrame)이다.이곳에서 레벨(난이도)과 타이핑 언어를 선택 할 수 있다.<br>
-
-### 3) 보석과 아이템 움직임을 도와주는 Thread
+### 2) 보석과 아이템 움직임을 도와주는 Thread
 
 <img width="1126" alt="image" src="https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/4c648a6b-9d8a-40ad-8a68-9fea7993de62">
 
@@ -113,7 +107,7 @@
 - Item(빵, 폭탄, 곡괭이) : ItemThread로 움직임
 <br><br>
 
-### 4) 프로젝트의 간단한 흐름도
+### 3) 프로젝트의 간단한 흐름도
 
 <img width="1440" alt="image" src="https://github.com/kyum-q/MovingWordTypingGame/assets/109158497/f7cd36a0-ebf6-4114-ab58-dee0a030f479">
 <br>
