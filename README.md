@@ -129,6 +129,7 @@
 > 15%: 아이템 제작<br>
 > 20%: 아름다운 보석 (루비, 사파이어)<br>
 > 55%: 평범한 보석<br>
+<br>
 
 ## 개발 언어
 <img src="https://img.shields.io/badge/JAVA-FF7800?style=for-the-badge&logo=Java&logoColor=#7F52FF">
