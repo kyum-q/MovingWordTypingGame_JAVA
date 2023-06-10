@@ -125,5 +125,5 @@
 > 55%: 평범한 보석<br>
 <br>
 
-## 개발 언어
+## 💡&nbsp; 개발 언어
 <img src="https://img.shields.io/badge/JAVA-FF7800?style=for-the-badge&logo=Java&logoColor=#7F52FF">
